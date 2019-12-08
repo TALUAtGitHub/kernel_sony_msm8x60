@@ -434,11 +434,7 @@ asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 	void __iomem *cpu_base = gic_data_cpu_base(gic);
 
 	do {
-		if (gic->need_access_lock)
-			raw_spin_lock(&irq_controller_lock);
 		irqstat = readl_relaxed(cpu_base + GIC_CPU_INTACK);
-		if (gic->need_access_lock)
-			raw_spin_unlock(&irq_controller_lock);
 		irqnr = irqstat & ~0x1c00;
 
 		if (likely(irqnr > 15 && irqnr < 1021)) {
@@ -447,11 +443,7 @@ asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 			continue;
 		}
 		if (irqnr < 16) {
-			if (gic->need_access_lock)
-				raw_spin_lock(&irq_controller_lock);
 			writel_relaxed(irqstat, cpu_base + GIC_CPU_EOI);
-			if (gic->need_access_lock)
-				raw_spin_unlock(&irq_controller_lock);
 #ifdef CONFIG_SMP
 			handle_IPI(irqnr, regs);
 #endif
